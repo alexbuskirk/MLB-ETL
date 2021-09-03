@@ -68,8 +68,8 @@ schedule_transform <- schedule_data %>%
     home_team_id = helper_team_id(team = home_team_name, type = 'id'),
     away_team_abbrv = helper_team_id(team = away_team_name, type = 'abbrv'),
     home_team_abbrv = helper_team_id(team = home_team_name, type = 'abbrv'),
-    game_id = paste0(helper_team_id(team = schedule_data$home_team_name, type = 'schedule'),
-                     str_remove_all(as.character(schedule_data$date),'-')
+    game_id = paste0(helper_team_id(team = home_team_name, type = 'schedule'),
+                     str_remove_all(as.character(date),'-')
                      ),
     operation_id = operation_id,
     operation_name = operation_name,
