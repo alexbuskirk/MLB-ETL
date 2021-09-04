@@ -21,10 +21,9 @@ function_odbc_set_up()
 ## Logging operations ----
 operations_number <- dbGetQuery(
   conn = odbc_connection_pc,
-  'select max(operations_number) from mlb.dbo.master_time_tracking'
+  'select max(operation_id) from mlb.dbo.time_tracking'
 ) %>% as.numeric()
 
-operation_id = 0 #<------------------------- DELETE ------
 
 operation_start_dtm <- Sys.time()
 operation_name <- 'update_schedule'
@@ -60,34 +59,65 @@ if (Sys.Date() >= as.Date(glue(lubridate::year(Sys.Date()),"-03-31"))) {
 
 }
 
-schedule_data <- load_schedule(years = c(2017:2021)) %>% rbindlist() #<------------------------- DELETE ------
-
 schedule_transform <- schedule_data %>%
+  rbindlist() %>%
   mutate(
-    away_team_id = helper_team_id(team = away_team_name, type = 'id'),
-    home_team_id = helper_team_id(team = home_team_name, type = 'id'),
+    away_team_id = as.integer(helper_team_id(team = away_team_name, type = 'id')),
+    home_team_id = as.integer(helper_team_id(team = home_team_name, type = 'id')),
     away_team_abbrv = helper_team_id(team = away_team_name, type = 'abbrv'),
     home_team_abbrv = helper_team_id(team = home_team_name, type = 'abbrv'),
     game_id = paste0(helper_team_id(team = home_team_name, type = 'schedule'),
-                     str_remove_all(as.character(date),'-')
+                     str_remove_all(as.character(game_date),'-')
                      ),
-    operation_id = operation_id,
-    operation_name = operation_name,
-    operation_start_dtm = operation_start_dtm
+    season = as.integer(season),
+    operation_id = as.integer(operation_id),
+    last_update_dtm = operation_start_dtm
 )
 
-schedule_grouped <- schedule_transform %>% group_by(game_id, date)
+schedule_grouped <- schedule_transform %>% group_by(game_id, game_date)
 
 schedule_ranked <- schedule_grouped %>%
-  mutate(rank = rank(date,ties.method = 'first')) %>%
-  left_join(., schedule_grouped %>% count() %>% ungroup() %>% select(-date), by = 'game_id') %>%
+  mutate(rank = rank(game_date,ties.method = 'first')) %>%
+  left_join(., schedule_grouped %>% count() %>% ungroup() %>% select(-game_date), by = 'game_id') %>%
   mutate(game_id = if_else(n == 1, paste0(game_id,0),paste0(game_id,rank))) %>%
+  ungroup() %>%
   select(-rank,-n)
 
-saveRDS(schedule_data, file = 'data/schedule_data.RDS')
+schedule_reorder <- schedule_ranked %>%
+  select(game_id
+         ,game_date
+         ,away_team_name
+         ,away_team_id
+         ,away_team_score
+         ,away_team_win_loss
+         ,home_team_name
+         ,home_team_id
+         ,home_team_score
+         ,home_team_win_loss
+         ,season
+         ,operation_id
+         ,last_update_dtm
+         )
 
+season_to_update <- max(schedule_reorder$season)
 
+delete <- dbSendQuery(odbc_connection_pc,
+              glue('DELETE FROM mlb.dbo.schedule WHERE season={season_to_update}'))
 
+dbClearResult(delete)
 
+dbWriteTable(
+  odbc_connection_pc,
+  value = schedule_reorder,
+  name = 'schedule',
+  append = TRUE#,
+  #filed.type = class_type
+)
+
+dbBind(update, schedule_reorder)  # send the updated data
+
+  # release the prepared statement
+
+function_logging()
 
 

@@ -1,3 +1,6 @@
+# Log Files
+data/log/mlb_schedule_update_log/*
+
 # Secrets
 secret/
 

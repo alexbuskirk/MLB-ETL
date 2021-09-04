@@ -27,7 +27,7 @@ function_odbc_set_up <- function() {
 
   connection <- "sqlserverpc"
 
-  odbc_connection_pc <<- dbConnect(odbc::odbc(), connection, timeout = 60)
+  odbc_connection_pc <<- dbConnect(odbc::odbc(), connection,  database = 'mlb', timeout = 60)
 
 }
 
@@ -43,39 +43,33 @@ function_sleep <- function(sleep_from = 5, sleep_to = 10){
 
 ##### Logging Functions #####
 function_logging <- function(){
-  end_time <- Sys.time()
+  operation_end_dtm <- Sys.time()
   cat(
-    paste('I am back to r_master', Sys.time(), sep = ' '),
+    paste('back to r_master', Sys.time(), sep = ' '),
     file = log_file,
     append = T,
     sep = '\n'
   )
 
-
-  ##### Upload Operations
-    odbc_connection_pc <- dbConnect(
-      odbc(),
-      dsn = 'sqlserverpc')
-
   #Create temp data
   temp_data_master <- data.frame(
-    operations_number = operations_number,
-    operations_name = operations,
-    start_time = start_time,
-    end_time = end_time
+    operation_id = operation_id,
+    operation_name = operation_name,
+    operation_start_dtm = operation_start_dtm,
+    operation_end_dtm = operation_end_dtm
   )
 
   ##### Load Latest Data to MySQL
   dbWriteTable(
     odbc_connection_pc,
     value = temp_data_master,
-    name = 'master_time_tracking',
+    name = 'time_tracking',
     append = TRUE#,
     #filed.type = class_type
   )
 
   cat(
-    paste('I am done with uploading master_time_tracking', Sys.time(), sep = ' '),
+    paste('done uploading time_tracking', Sys.time(), sep = ' '),
     file = log_file,
     append = T,
     sep = '\n'
