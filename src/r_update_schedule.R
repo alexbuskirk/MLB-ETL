@@ -19,7 +19,7 @@ function_load_libraries()
 function_odbc_set_up()
 
 ## Logging operations ----
-operations_number <- dbGetQuery(
+operation_id <- dbGetQuery(
   conn = odbc_connection_pc,
   'select max(operation_id) from mlb.dbo.time_tracking'
 ) %>% as.numeric()
@@ -113,8 +113,6 @@ dbWriteTable(
   append = TRUE#,
   #filed.type = class_type
 )
-
-dbBind(update, schedule_reorder)  # send the updated data
 
   # release the prepared statement
 
