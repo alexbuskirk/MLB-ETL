@@ -41,6 +41,17 @@ function_sleep <- function(sleep_from = 5, sleep_to = 10){
 }
 
 
+##### Test Internet Connection #####
+havingIP <- function() {
+  if (.Platform$OS.type == "windows") {
+    ipmessage <- system("ipconfig", intern = TRUE)
+  } else {
+    ipmessage <- system("ifconfig", intern = TRUE)
+  }
+  validIP <- "((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)[.]){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)"
+  any(grep(validIP, ipmessage))
+}
+
 ##### Logging Functions #####
 function_logging <- function(){
   operation_end_dtm <- Sys.time()
@@ -76,6 +87,18 @@ function_logging <- function(){
   )
 
 }
+
+log_entry <- function(text) {
+
+  cat(
+    paste(text, Sys.time(), sep = ' '),
+    file = log_file,
+    append = T,
+    sep = '\n'
+  )
+
+}
+
 
 ##### Mapping short team names to MLB team_id
 

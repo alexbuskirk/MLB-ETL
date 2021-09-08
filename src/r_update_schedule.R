@@ -45,6 +45,21 @@ log_file <- file(
   open = 'a'
 )
 
+## Test internet connection ----
+if (havingIP() == FALSE) {
+
+  log_entry('Cannot connect to the internet')
+  Sys.sleep(120)
+
+  if (havingIP() == FALSE) {
+
+    log_entry('Still cannot connect to the internet')
+    stop()
+
+  }
+
+} # End if: testing internet connection
+
 # START OPERATIONS ----
 
 # Determining the year of the most recent season

@@ -15,6 +15,7 @@ source(
 
 function_load_libraries()
 
+
 ## Create connection ----
 function_odbc_set_up()
 
@@ -43,6 +44,21 @@ log_file <- file(
   ),
   open = 'a'
 )
+
+## Test internet connection ----
+if (havingIP() == FALSE) {
+
+  log_entry('Cannot connect to the internet')
+  Sys.sleep(120)
+
+  if (havingIP() == FALSE) {
+
+    log_entry('Still cannot connect to the internet')
+    stop()
+
+  }
+
+} # End if: testing internet connection
 
 ## Start Operations ----
 
