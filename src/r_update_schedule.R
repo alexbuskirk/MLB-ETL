@@ -1,7 +1,7 @@
 # SETUP ----
 
 ## For Task Scheduler  ----
-setwd('C:/Users/catspur/Desktop/projects/MLB-ETL')
+setwd('C:/Users/alexb/Desktop/projects/MLB-ETL')
 
 ## Load functions and libraries ----
 source(
